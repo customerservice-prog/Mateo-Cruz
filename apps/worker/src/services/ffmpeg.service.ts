@@ -6,6 +6,12 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 const TMP_DIR = process.env.TMP_DIR || '/tmp/mateo-cruz';
 
+/** Paths for the subtitles filter must use forward slashes; Windows drive colons escaped. */
+function toFfmpegSubtitlePath(filePath: string): string {
+  const normalized = filePath.replace(/\\/g, '/');
+  return normalized.replace(/^([A-Za-z]):/, '$1\\:').replace(/'/g, "'\\\\\\''");
+}
+
 // Ensure temp directory exists
 async function ensureTmpDir(subDir: string): Promise<string> {
   const dir = join(TMP_DIR, subDir);
@@ -51,7 +57,9 @@ export const ffmpeg = {
   async concatVideos(videoPaths: string[], outputPath: string): Promise<string> {
     const dir = await ensureTmpDir('concat');
     const listFile = join(dir, `list_${Date.now()}.txt`);
-    const lines = videoPaths.map(p => `file '${p}'`).join('\n');
+    const lines = videoPaths
+      .map((p) => `file '${p.replace(/\\/g, '/').replace(/'/g, "'\\''")}'`)
+      .join('\n');
     await fs.writeFile(listFile, lines, 'utf8');
 
     const cmd = `ffmpeg -y -f concat -safe 0 -i "${listFile}" -c copy "${outputPath}"`;
@@ -84,8 +92,8 @@ export const ffmpeg = {
       audioFilter = `-map 0:v -map 1:a`;
     }
 
-    // Burn subtitles + apply cinematic grade
-    const videoFilter = `-vf "subtitles=${subtitlesPath}:force_style='FontName=Arial,FontSize=20,PrimaryColour=&Hffffff,OutlineColour=&H000000,Bold=1,Outline=2,Shadow=1,Alignment=2',eq=contrast=1.15:brightness=-0.03:saturation=0.85"`;
+    const subPath = toFfmpegSubtitlePath(subtitlesPath);
+    const videoFilter = `-vf "subtitles='${subPath}':force_style='FontName=Arial,FontSize=20,PrimaryColour=&Hffffff,OutlineColour=&H000000,Bold=1,Outline=2,Shadow=1,Alignment=2'"`;
 
     const cmd = `ffmpeg -y ${inputArgs} ${videoFilter} ${audioFilter} -c:v libx264 -preset medium -crf 18 -c:a aac -b:a 192k -movflags +faststart "${outputPath}"`;
     await execAsync(cmd, { maxBuffer: 1024 * 1024 * 50 });
@@ -124,7 +132,7 @@ export const ffmpeg = {
    * Clean up temp files for a project.
    */
   async cleanup(projectId: string): Promise<void> {
-    const dir = join(TMP_DIR, projectId);
+    const dir = join(TMP_DIR, `mateo-${projectId}`);
     await fs.rm(dir, { recursive: true, force: true });
   },
 };

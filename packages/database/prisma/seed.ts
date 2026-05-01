@@ -14,10 +14,10 @@ async function main() {
 
   // Create default dev user
   const user = await db.user.upsert({
-    where: { email: 'dev@mateocruZ.local' },
+    where: { email: 'dev@mateocruz.local' },
     update: {},
     create: {
-      email: 'dev@mateocruZ.local',
+      email: 'dev@mateocruz.local',
       name: 'Studio Owner',
     },
   });
@@ -58,12 +58,7 @@ async function main() {
   console.log(MATEO_PROMPT_BASE);
 }
 
-const MATEO_PROMPT_BASE = `heavyset Hispanic man, 30-35 years old, short dark hair slightly unkempt, 
-tired deep-set eyes with subtle bags underneath, 3-5 days of dark stubble, 
-warm tan-brown skin tone, broad nose, strong jawline, 
-wearing a dark gray or black hoodie, emotionally heavy body language, 
-restrained intense expression — not dramatic but carrying something heavy, 
-realistic cinematic portrayal, psychological drama`;
+const MATEO_PROMPT_BASE = `heavyset Hispanic man, 30-35 years old, short dark hair slightly unkempt, tired deep-set eyes with subtle bags, 3-5 days dark stubble, warm tan-brown skin, dark hoodie, emotionally heavy body language, restrained intense expression`;
 
 const MATEO_NEGATIVE_PROMPT = `different person, different face, white person, east asian person, 
 thin athletic person, woman, child, old man over 50, teenager under 25,

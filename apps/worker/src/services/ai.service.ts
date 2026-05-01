@@ -32,28 +32,49 @@ export const ai = {
     },
 
     /**
-         * Generate and parse JSON output
+     * Generate and parse JSON (string prompt or explicit system + user messages).
      */
-    async generateJSON<T = Record<string, unknown>>(prompt: string): Promise<T> {
-          const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-            {
-                      role: 'system',
-                      content:
-                                  'You are a cinematic storytelling AI. Always respond with valid JSON only. No markdown, no explanation.',
-            },
-            { role: 'user', content: prompt },
-                ];
+    async generateJSON<T = Record<string, unknown>>(
+      input: string | { system: string; prompt: string }
+    ): Promise<T> {
+      const messages: OpenAI.Chat.ChatCompletionMessageParam[] =
+        typeof input === 'string'
+          ? [
+              {
+                role: 'system',
+                content:
+                  'You are a cinematic storytelling AI. Always respond with valid JSON only. No markdown, no explanation.',
+              },
+              { role: 'user', content: input },
+            ]
+          : [
+              { role: 'system', content: input.system },
+              { role: 'user', content: input.prompt },
+            ];
 
       const response = await openai.chat.completions.create({
-              model: process.env.OPENAI_MODEL || 'gpt-4o',
-              messages,
-              response_format: { type: 'json_object' },
-              max_tokens: 8000,
-              temperature: 0.85,
+        model: process.env.OPENAI_MODEL || 'gpt-4o',
+        messages,
+        response_format: { type: 'json_object' },
+        max_tokens: 8000,
+        temperature: 0.85,
       });
 
       const raw = response.choices[0]?.message?.content || '{}';
-          return JSON.parse(raw) as T;
+      return JSON.parse(raw) as T;
+    },
+
+    async generateText(input: { system: string; prompt: string }): Promise<string> {
+      const response = await openai.chat.completions.create({
+        model: process.env.OPENAI_MODEL || 'gpt-4o',
+        messages: [
+          { role: 'system', content: input.system },
+          { role: 'user', content: input.prompt },
+        ],
+        max_tokens: 8000,
+        temperature: 0.85,
+      });
+      return response.choices[0]?.message?.content || '';
     },
 
     /**
@@ -68,9 +89,9 @@ export const ai = {
           lightingStyle?: string;
     }): string {
           const AVATAR_BASE =
-                  'heavyset Hispanic man, approximately 32 years old, short dark hair, tired eyes with subtle bags, ' +
-                  'slight dark stubble beard, wearing a dark hoodie, pale olive skin tone, emotionally heavy expression, ' +
-                  'slightly heavy build, introspective look';
+            'heavyset Hispanic man, 30-35 years old, short dark hair slightly unkempt, ' +
+            'tired deep-set eyes with subtle bags, 3-5 days dark stubble, warm tan-brown skin, ' +
+            'dark hoodie, emotionally heavy body language, restrained intense expression';
 
       return [
               `MAIN CHARACTER: ${AVATAR_BASE}`,

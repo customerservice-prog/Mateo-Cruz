@@ -8,12 +8,14 @@
           "packages/*"
     ],
     "scripts": {
+          "postinstall": "npm run db:generate",
           "dev": "concurrently \"npm run dev:web\" \"npm run dev:worker\"",
           "dev:web": "cd apps/web && npm run dev",
           "dev:worker": "cd apps/worker && npm run dev",
           "build": "npm run build --workspaces",
           "db:migrate": "cd packages/database && npx prisma migrate dev",
           "db:generate": "cd packages/database && npx prisma generate",
+          "db:seed": "cd packages/database && npx prisma db seed",
           "db:studio": "cd packages/database && npx prisma studio",
           "docker:up": "docker-compose up -d",
           "docker:down": "docker-compose down"

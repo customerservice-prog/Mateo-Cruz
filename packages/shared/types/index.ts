@@ -12,7 +12,15 @@ export type ProjectStatus =
   | 'generating_voice'
   | 'rendering'
   | 'quality_check'
+  | 'quality_passed'
+  | 'quality_flagged'
   | 'generating_youtube_package'
+  | 'concept_complete'
+  | 'script_complete'
+  | 'scenes_complete'
+  | 'images_complete'
+  | 'voice_complete'
+  | 'render_complete'
   | 'complete'
   | 'failed';
 
@@ -49,7 +57,7 @@ export const MATEO_CRUZ: Omit<Avatar, 'id' | 'userId' | 'createdAt'> = {
   name: 'Mateo Cruz',
   description: 'A heavyset Hispanic man in his early 30s with a deep emotional American voice',
   promptBase:
-    'heavyset Hispanic man, 30-35 years old, short dark hair slightly unkempt, tired deep-set eyes with subtle bags, light stubble 3-5 days, warm tan skin, dark hoodie, emotionally heavy body language, restrained intense expression',
+    'heavyset Hispanic man, 30-35 years old, short dark hair slightly unkempt, tired deep-set eyes with subtle bags, 3-5 days dark stubble, warm tan-brown skin, dark hoodie, emotionally heavy body language, restrained intense expression',
   negativePrompt:
     'different person, different face, white person, thin person, woman, child, old man, cartoon, anime, blurry, low quality, watermark, text',
   referenceImageUrl: '',

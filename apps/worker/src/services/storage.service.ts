@@ -1,4 +1,6 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { promises as fs } from 'fs';
+import path from 'path';
 import fetch from 'node-fetch';
 
 const s3 = new S3Client({
@@ -35,9 +37,16 @@ export const storage = {
   },
 
   async uploadFile(filePath: string, key: string, contentType: string): Promise<string> {
-    const fs = await import('fs/promises');
     const buffer = await fs.readFile(filePath);
     return this.uploadBuffer(buffer, key, contentType);
+  },
+
+  async download(url: string, destPath: string): Promise<void> {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to download: ${url} (${response.status})`);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    await fs.mkdir(path.dirname(destPath), { recursive: true });
+    await fs.writeFile(destPath, buffer);
   },
 
   getPublicUrl(key: string): string {

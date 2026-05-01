@@ -15,7 +15,9 @@ export async function runScriptJob(projectId: string) {
     data: { status: 'generating_outline' },
   });
 
-  const targetMinutes = project.targetLengthSeconds / 60;
+  const lengthSeconds =
+    project.targetLengthSeconds > 0 ? project.targetLengthSeconds : 1200;
+  const targetMinutes = lengthSeconds / 60;
   const targetWordCount = Math.round(targetMinutes * 140);
 
   const outline = await ai.generateJSON({

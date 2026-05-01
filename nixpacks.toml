@@ -1,0 +1,11 @@
+# Railway (Nixpacks): FFmpeg for the worker service (Ken Burns + final render).
+# Same file applies to all services from this repo; the web service ignores FFmpeg.
+#
+# Per-service commands in Railway (Settings → Deploy):
+#   Web:    Build  →  npm ci && npm run db:generate && npm run build
+#           Start  →  cd apps/web && npm run start
+#   Worker: Build  →  npm ci && npm run db:generate && npm run build
+#           Start  →  cd apps/worker && npm run start
+
+[phases.setup]
+aptPkgs = ['ffmpeg']

@@ -1,43 +1,29 @@
-# Mateo Cruz - Docker Compose
+# Mateo Cruz — local Postgres + Redis
 version: '3.8'
 
 services:
   postgres:
-      image: postgres:16-alpine
-          environment:
-                POSTGRES_USER: mateocruz
-                      POSTGRES_PASSWORD: mateocruz_dev
-                            POSTGRES_DB: mateocruz
-                                ports:
-                                      - '5432:5432'
-                                          volumes:
-                                                - postgres_data:/var/lib/postgresql/data
-                                                    healthcheck:
-                                                          test: ['CMD-SHELL', 'pg_isready -U mateocruz']
-                                                                interval: 10s
-                                                                      retries: 5
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mateocruz
+      POSTGRES_PASSWORD: mateocruz_dev
+      POSTGRES_DB: mateocruz
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mateocruz']
+      interval: 10s
+      retries: 5
 
-                                                                        redis:
-                                                                            image: redis:7-alpine
-                                                                                ports:
-                                                                                      - '6379:6379'
-                                                                                          volumes:
-                                                                                                - redis_data:/data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
 
-                                                                                                  worker:
-                                                                                                      build:
-                                                                                                            context: .
-                                                                                                                  dockerfile: apps/worker/Dockerfile
-                                                                                                                      environment:
-                                                                                                                            DATABASE_URL: postgresql://mateocruz:mateocruz_dev@postgres:5432/mateocruz
-                                                                                                                                  REDIS_HOST: redis
-                                                                                                                                        REDIS_PORT: 6379
-                                                                                                                                              TEMP_DIR: /tmp/mateocruz
-                                                                                                                                                  env_file: [.env]
-                                                                                                                                                      depends_on: [postgres, redis]
-                                                                                                                                                          volumes:
-                                                                                                                                                                - /tmp/mateocruz:/tmp/mateocruz
-                                                                                                                                                                
-                                                                                                                                                                volumes:
-                                                                                                                                                                  postgres_data:
-                                                                                                                                                                    redis_data:
+volumes:
+  postgres_data:
+  redis_data:
