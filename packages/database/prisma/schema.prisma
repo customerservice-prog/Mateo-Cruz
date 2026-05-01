@@ -1,0 +1,178 @@
+// Mateo Cruz - Prisma Database Schema
+// Autonomous Cinematic YouTube Video Studio
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  credits   Int      @default(10)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  avatars         Avatar[]
+  projects        Project[]
+  characterMemory CharacterMemory[]
+  @@map("users")
+}
+
+model Avatar {
+  id                String   @id @default(uuid())
+  userId            String
+  name              String   @default("Mateo Cruz")
+  promptBase        String   @default("heavyset Hispanic man, 32 years old, short dark hair, tired eyes, subtle beard, dark hoodie")
+  negativePrompt    String   @default("different person, female, child, anime, cartoon, blurry")
+  referenceImageUrl String?
+  voiceId           String?
+  voiceStyle        String   @default("deep, raspy, American accent, slow emotional pacing")
+  keyFeatures       String[] @default(["heavyset", "Hispanic", "dark hair", "tired eyes"])
+  seed              Int?
+  isDefault         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[]
+  @@map("avatars")
+}
+
+model Project {
+  id                  String    @id @default(uuid())
+  userId              String
+  avatarId            String
+  prompt              String
+  title               String?
+  status              String    @default("queued")
+  targetLengthSeconds Int       @default(600)
+  stepConcept         Boolean   @default(false)
+  stepOutline         Boolean   @default(false)
+  stepScript          Boolean   @default(false)
+  stepScenes          Boolean   @default(false)
+  stepImages          Boolean   @default(false)
+  stepVideos          Boolean   @default(false)
+  stepVoice           Boolean   @default(false)
+  stepMusic           Boolean   @default(false)
+  stepSubtitles       Boolean   @default(false)
+  stepRender          Boolean   @default(false)
+  stepQuality         Boolean   @default(false)
+  retryCount          Int       @default(0)
+  conceptJson         Json?
+  outlineJson         Json?
+  scriptText          String?
+  voiceUrl            String?
+  musicUrl            String?
+  finalVideoUrl       String?
+  actualCostUsd       Float     @default(0)
+  errorMessage        String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  completedAt         DateTime?
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatar         Avatar           @relation(fields: [avatarId], references: [id])
+  chapters       Chapter[]
+  scenes         Scene[]
+  assets         Asset[]
+  qualityReports QualityReport[]
+  youtubePackage YoutubePackage?
+  @@map("projects")
+}
+
+model Chapter {
+  id          String  @id @default(uuid())
+  projectId   String
+  index       Int
+  title       String
+  summary     String?
+  startTimeMs Int     @default(0)
+  endTimeMs   Int?
+  act         String?
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scenes  Scene[]
+  @@map("chapters")
+}
+
+model Scene {
+  id              String  @id @default(uuid())
+  projectId       String
+  chapterId       String?
+  index           Int
+  durationSeconds Int     @default(8)
+  narration       String
+  emotion         String?
+  symbol          String?
+  escalationLevel Int     @default(1)
+  environment     String?
+  visualPrompt    String?
+  negativePrompt  String?
+  motionPrompt    String?
+  cameraType      String?
+  lightingStyle   String?
+  imageUrl        String?
+  videoUrl        String?
+  sfxJson         Json?
+  startTimeMs     Int?
+  endTimeMs       Int?
+  status          String  @default("pending")
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chapter  Chapter? @relation(fields: [chapterId], references: [id])
+  @@map("scenes")
+}
+
+model Asset {
+  id        String   @id @default(uuid())
+  projectId String
+  type      String
+  url       String
+  metadata  Json?
+  sizeBytes Int?
+  createdAt DateTime @default(now())
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@map("assets")
+}
+
+model QualityReport {
+  id        String   @id @default(uuid())
+  projectId String
+  score     Int
+  passed    Boolean
+  issues    Json
+  checks    Json
+  createdAt DateTime @default(now())
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@map("quality_reports")
+}
+
+model YoutubePackage {
+  id           String   @id @default(uuid())
+  projectId    String   @unique
+  title        String
+  description  String
+  tags         String[]
+  chapters     Json
+  thumbnailUrl String?
+  transcript   String?
+  aiDisclosure Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@map("youtube_packages")
+}
+
+model CharacterMemory {
+  id             String   @id @default(uuid())
+  userId         String
+  characterId    String   @default("mateo-cruz")
+  projectId      String
+  summary        String
+  keyEvents      Json
+  emotionalState String
+  motifs         String[]
+  createdAt      DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("character_memory")
+}
