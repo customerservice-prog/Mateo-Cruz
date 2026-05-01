@@ -3,10 +3,15 @@
  * Step 1: Generate the video concept from user prompt (with character memory)
  */
 
+import type { Prisma } from '@prisma/client';
 import { db } from '../services/db.service';
 import { ai } from '../services/ai.service';
 import { videoQueue } from '../queues/video.queue';
 import { buildConceptPrompt } from '../prompts/concept.prompt';
+
+function toInputJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
 
 export async function runConceptJob(projectId: string): Promise<void> {
   console.log(`[Concept Job] Starting for project: ${projectId}`);
@@ -48,7 +53,7 @@ export async function runConceptJob(projectId: string): Promise<void> {
     where: { id: projectId },
     data: {
       title: String(conceptRaw.title),
-      conceptJson: conceptRaw,
+      conceptJson: toInputJson(conceptRaw),
       stepConcept: true,
       status: 'concept_complete',
     },

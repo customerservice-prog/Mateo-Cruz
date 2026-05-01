@@ -1,6 +1,11 @@
+import type { Prisma } from '@prisma/client';
 import { db } from '../services/db.service';
 import { ai } from '../services/ai.service';
 import { videoQueue } from '../queues/video.queue';
+
+function toInputJson(value: unknown): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
 
 export async function runScriptJob(projectId: string) {
   const project = await db.project.findUnique({
@@ -20,7 +25,7 @@ export async function runScriptJob(projectId: string) {
   const targetMinutes = lengthSeconds / 60;
   const targetWordCount = Math.round(targetMinutes * 140);
 
-  const outline = await ai.generateJSON({
+  const outline = await ai.generateJSON<Record<string, unknown>>({
     system: 'You are a cinematic story director. Create a psychological narrative outline.',
     prompt: `Create a ${Math.round(targetMinutes)}-minute outline. User idea: ${project.prompt}
 Character: ${project.avatar.name} - heavyset Hispanic man, early 30s, American accent, deep emotional voice.
@@ -29,7 +34,7 @@ Return JSON: { title, acts: [{name, durationSeconds, summary}], emotionalArc, ce
 
   await db.project.update({
     where: { id: projectId },
-    data: { outlineJson: outline, status: 'generating_script' },
+    data: { outlineJson: toInputJson(outline), status: 'generating_script' },
   });
 
   const script = await ai.generateText({

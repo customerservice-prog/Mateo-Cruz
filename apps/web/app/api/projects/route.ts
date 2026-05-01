@@ -3,7 +3,6 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { videoQueue } from '@/lib/queue';
 
 const MATEO_AVATAR_ID = 'mateo-cruz-v1';
 
@@ -53,7 +52,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    await videoQueue.add('generate-concept', { projectId: project.id });
+    const { getVideoQueue } = await import('@/lib/queue');
+    await getVideoQueue().add('generate-concept', { projectId: project.id });
     return NextResponse.json({
       projectId: project.id,
       status: 'queued',

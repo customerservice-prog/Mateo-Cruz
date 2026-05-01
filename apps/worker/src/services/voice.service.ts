@@ -1,6 +1,6 @@
-import ElevenLabs from 'elevenlabs';
+import { ElevenLabsClient } from 'elevenlabs';
 
-const elevenlabs = new ElevenLabs({ apiKey: process.env.ELEVENLABS_API_KEY });
+const client = new ElevenLabsClient();
 
 /** Mateo Cruz — locked ElevenLabs voice settings */
 export const MATEO_VOICE_SETTINGS = {
@@ -27,7 +27,7 @@ export function addNarratorPauses(text: string): string {
  */
 export async function generateVoice(text: string, voiceId: string): Promise<Buffer> {
   const processed = addNarratorPauses(text);
-  const audioStream = await elevenlabs.generate({
+  const audioStream = await client.generate({
     voice: voiceId,
     text: processed,
     model_id: 'eleven_multilingual_v2',
@@ -37,7 +37,7 @@ export async function generateVoice(text: string, voiceId: string): Promise<Buff
 
   const chunks: Buffer[] = [];
   for await (const chunk of audioStream) {
-    chunks.push(Buffer.from(chunk));
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as Uint8Array));
   }
   return Buffer.concat(chunks);
 }

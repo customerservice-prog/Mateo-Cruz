@@ -12,7 +12,7 @@ import { runImagesJob } from './jobs/images.job';
 import { runVoiceJob } from './jobs/voice.job';
 import { runRenderJob } from './jobs/render.job';
 import { runQualityJob } from './jobs/quality.job';
-import { runYoutubePackageJob } from './jobs/youtube-package.job';
+import { runYouTubePackageJob } from './jobs/youtube-package.job';
 
 export { videoQueue };
 
@@ -37,8 +37,8 @@ const worker = new Worker(
         return runRenderJob(projectId);
       case 'quality-check':
         return runQualityJob(projectId);
-      case 'youtube-package':
-        return runYoutubePackageJob(projectId);
+        case 'youtube-package':
+        return runYouTubePackageJob(projectId);
       default:
         throw new Error(`Unknown job: ${job.name}`);
     }

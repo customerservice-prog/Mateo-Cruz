@@ -2,6 +2,9 @@
   "name": "@mateo-cruz/shared",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "build": "node -e \"process.exit(0)\""
+  },
   "main": "./types/index.ts",
   "types": "./types/index.ts"
 }

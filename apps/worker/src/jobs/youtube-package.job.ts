@@ -1,6 +1,15 @@
 import { db } from '../services/db.service';
 import { ai } from '../services/ai.service';
 
+interface YouTubeAiMeta {
+  title?: string;
+  description?: string;
+  tags?: string[];
+  thumbnailPrompt?: string;
+  chapters?: { timeSeconds: number; title: string }[];
+  pinnedComment?: string;
+}
+
 export async function runYouTubePackageJob(projectId: string) {
   const project = await db.project.findUnique({
     where: { id: projectId },
@@ -17,7 +26,7 @@ export async function runYouTubePackageJob(projectId: string) {
   const totalDuration = project.scenes.reduce((sum: number, s: any) => sum + s.durationSeconds, 0);
   const scriptExcerpt = project.scriptText?.substring(0, 800) || '';
 
-  const youtubeData = await ai.generateJSON({
+  const youtubeData = await ai.generateJSON<YouTubeAiMeta>({
     system: `You are a YouTube SEO expert specializing in psychological storytelling channels.
 Channel: Inside Mateo Cruz — cinematic psychological stories.
 Create metadata that is: intriguing, emotionally resonant, monetization-safe.`,
@@ -54,7 +63,10 @@ Return JSON:
     t += scene.durationSeconds;
   }
 
-  const finalChapters = youtubeData.chapters?.length > 3 ? youtubeData.chapters : autoChapters;
+  const finalChapters =
+    Array.isArray(youtubeData.chapters) && youtubeData.chapters.length > 3
+      ? youtubeData.chapters
+      : autoChapters;
 
   await db.youtubePackage.create({
     data: {
