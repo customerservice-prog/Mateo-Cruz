@@ -9,6 +9,9 @@
     ],
     "scripts": {
           "postinstall": "npm run db:generate",
+          "start": "cd apps/web && npm run start",
+          "start:web": "cd apps/web && npm run start",
+          "start:worker": "cd apps/worker && npm run start",
           "dev": "concurrently \"npm run dev:web\" \"npm run dev:worker\"",
           "dev:web": "cd apps/web && npm run dev",
           "dev:worker": "cd apps/worker && npm run dev",

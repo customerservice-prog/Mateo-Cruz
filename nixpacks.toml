@@ -1,11 +1,8 @@
-# Railway (Nixpacks): FFmpeg for the worker service (Ken Burns + final render).
-# Same file applies to all services from this repo; the web service ignores FFmpeg.
+# Railway: FFmpeg in the image (Ken Burns / final render). Root package.json "start" → Next.js web.
 #
-# Per-service commands in Railway (Settings → Deploy):
-#   Web:    Build  →  npm ci && npm run db:generate && npm run build
-#           Start  →  cd apps/web && npm run start
-#   Worker: Build  →  npm ci && npm run db:generate && npm run build
-#           Start  →  cd apps/worker && npm run start
+# Railpack requires a root "start" script (see package.json).
+# Web service: use default start (npm start).
+# Worker service: Railway → Settings → Deploy → Start Command: npm run start:worker
 
 [phases.setup]
 aptPkgs = ['ffmpeg']
