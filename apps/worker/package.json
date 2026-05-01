@@ -1,0 +1,30 @@
+{
+  "name": "@mateo-cruz/worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mateo Cruz video generation worker — AI pipeline processor",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@prisma/client": "^5.15.0",
+    "bullmq": "^5.8.0",
+    "elevenlabs": "^0.17.0",
+    "ioredis": "^5.3.2",
+    "node-fetch": "^3.3.2",
+    "openai": "^4.52.0",
+    "replicate": "^0.32.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
