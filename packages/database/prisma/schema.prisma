@@ -14,165 +14,133 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String?
-  credits   Int      @default(10)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  avatars         Avatar[]
-  projects        Project[]
-  characterMemory CharacterMemory[]
-  @@map("users")
+
+  avatars  Avatar[]
+  projects Project[]
 }
 
 model Avatar {
-  id                String   @id @default(uuid())
-  userId            String
-  name              String   @default("Mateo Cruz")
-  promptBase        String   @default("heavyset Hispanic man, 32 years old, short dark hair, tired eyes, subtle beard, dark hoodie")
-  negativePrompt    String   @default("different person, female, child, anime, cartoon, blurry")
-  referenceImageUrl String?
-  voiceId           String?
-  voiceStyle        String   @default("deep, raspy, American accent, slow emotional pacing")
-  keyFeatures       String[] @default(["heavyset", "Hispanic", "dark hair", "tired eyes"])
-  seed              Int?
-  isDefault         Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String   @id @default(uuid())
+  userId           String
+  name             String
+  description      String   @default("")
+  promptBase       String   @db.Text
+  negativePrompt   String   @db.Text @default("")
+  referenceImageUrl String   @default("")
+  voiceId          String   @default("")
+  createdAt        DateTime @default(now())
+
+  user     User              @relation(fields: [userId], references: [id])
   projects Project[]
-  @@map("avatars")
+  memories CharacterMemory[]
 }
 
 model Project {
-  id                  String    @id @default(uuid())
+  id                  String        @id @default(uuid())
   userId              String
   avatarId            String
-  prompt              String
   title               String?
-  status              String    @default("queued")
-  targetLengthSeconds Int       @default(600)
-  stepConcept         Boolean   @default(false)
-  stepOutline         Boolean   @default(false)
-  stepScript          Boolean   @default(false)
-  stepScenes          Boolean   @default(false)
-  stepImages          Boolean   @default(false)
-  stepVideos          Boolean   @default(false)
-  stepVoice           Boolean   @default(false)
-  stepMusic           Boolean   @default(false)
-  stepSubtitles       Boolean   @default(false)
-  stepRender          Boolean   @default(false)
-  stepQuality         Boolean   @default(false)
-  retryCount          Int       @default(0)
+  prompt              String        @db.Text
+  status              String        @default("queued")
+  targetLengthSeconds Int           @default(1800)
+  scriptText          String?       @db.Text
   conceptJson         Json?
   outlineJson         Json?
-  scriptText          String?
   voiceUrl            String?
+  subtitlesUrl        String?
   musicUrl            String?
   finalVideoUrl       String?
-  actualCostUsd       Float     @default(0)
-  errorMessage        String?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  completedAt         DateTime?
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  avatar         Avatar           @relation(fields: [avatarId], references: [id])
-  chapters       Chapter[]
+  retryCount          Int           @default(0)
+
+  // Step tracking for resume capability
+  stepConcept  Boolean @default(false)
+  stepOutline  Boolean @default(false)
+  stepScript   Boolean @default(false)
+  stepScenes   Boolean @default(false)
+  stepImages   Boolean @default(false)
+  stepVoice    Boolean @default(false)
+  stepRender   Boolean @default(false)
+  stepQuality  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id])
+  avatar         Avatar          @relation(fields: [avatarId], references: [id])
   scenes         Scene[]
   assets         Asset[]
   qualityReports QualityReport[]
   youtubePackage YoutubePackage?
-  @@map("projects")
-}
-
-model Chapter {
-  id          String  @id @default(uuid())
-  projectId   String
-  index       Int
-  title       String
-  summary     String?
-  startTimeMs Int     @default(0)
-  endTimeMs   Int?
-  act         String?
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  scenes  Scene[]
-  @@map("chapters")
 }
 
 model Scene {
-  id              String  @id @default(uuid())
+  id              String   @id @default(uuid())
   projectId       String
-  chapterId       String?
   index           Int
-  durationSeconds Int     @default(8)
-  narration       String
+  durationSeconds Int
+  narration       String   @db.Text
   emotion         String?
-  symbol          String?
-  escalationLevel Int     @default(1)
   environment     String?
-  visualPrompt    String?
-  negativePrompt  String?
-  motionPrompt    String?
-  cameraType      String?
-  lightingStyle   String?
+  visualPrompt    String   @db.Text
+  motionPrompt    String?  @db.Text
   imageUrl        String?
   videoUrl        String?
   sfxJson         Json?
-  startTimeMs     Int?
-  endTimeMs       Int?
-  status          String  @default("pending")
-  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  chapter  Chapter? @relation(fields: [chapterId], references: [id])
-  @@map("scenes")
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@index([projectId, index])
 }
 
 model Asset {
   id        String   @id @default(uuid())
   projectId String
-  type      String
+  type      String   // "image" | "video" | "audio" | "subtitle"
   url       String
   metadata  Json?
-  sizeBytes Int?
   createdAt DateTime @default(now())
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  @@map("assets")
+
+  project Project @relation(fields: [projectId], references: [id])
 }
 
 model QualityReport {
   id        String   @id @default(uuid())
-  projectId String
+  projectId String   @unique
   score     Int
   passed    Boolean
-  issues    Json
-  checks    Json
+  issues    Json     // QualityIssue[]
   createdAt DateTime @default(now())
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  @@map("quality_reports")
+
+  project Project @relation(fields: [projectId], references: [id])
 }
 
 model YoutubePackage {
-  id           String   @id @default(uuid())
-  projectId    String   @unique
-  title        String
-  description  String
-  tags         String[]
-  chapters     Json
-  thumbnailUrl String?
-  transcript   String?
-  aiDisclosure Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  @@map("youtube_packages")
+  id              String   @id @default(uuid())
+  projectId       String   @unique
+  title           String
+  description     String   @db.Text
+  tags            String[]
+  thumbnailPrompt String   @db.Text @default("")
+  chapters        Json     // { timeSeconds: number, title: string }[]
+  pinnedComment   String   @default("")
+  createdAt       DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
 }
 
 model CharacterMemory {
-  id             String   @id @default(uuid())
-  userId         String
-  characterId    String   @default("mateo-cruz")
-  projectId      String
-  summary        String
-  keyEvents      Json
+  id            String   @id @default(uuid())
+  avatarId      String
+  projectId     String
+  summary       String   @db.Text
   emotionalState String
-  motifs         String[]
-  createdAt      DateTime @default(now())
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@map("character_memory")
+  keyEvents     Json     // string[]
+  createdAt     DateTime @default(now())
+
+  avatar Avatar @relation(fields: [avatarId], references: [id])
+
+  @@index([avatarId, createdAt])
 }
