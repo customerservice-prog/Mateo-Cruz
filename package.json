@@ -1,0 +1,33 @@
+{
+    "name": "mateo-cruz",
+    "version": "1.0.0",
+    "description": "Autonomous Cinematic YouTube Video Studio - Inside Mateo Cruz",
+    "private": true,
+    "workspaces": [
+          "apps/*",
+          "packages/*"
+    ],
+    "scripts": {
+          "dev": "concurrently \"npm run dev:web\" \"npm run dev:worker\"",
+          "dev:web": "cd apps/web && npm run dev",
+          "dev:worker": "cd apps/worker && npm run dev",
+          "build": "npm run build --workspaces",
+          "db:migrate": "cd packages/database && npx prisma migrate dev",
+          "db:generate": "cd packages/database && npx prisma generate",
+          "db:studio": "cd packages/database && npx prisma studio",
+          "docker:up": "docker-compose up -d",
+          "docker:down": "docker-compose down"
+    },
+    "devDependencies": {
+          "concurrently": "^8.2.2",
+          "typescript": "^5.3.3",
+          "@types/node": "^20.11.5"
+    },
+    "dependencies": {
+          "@prisma/client": "^5.8.1",
+          "bullmq": "^5.1.6",
+          "openai": "^4.26.0",
+          "@aws-sdk/client-s3": "^3.490.0",
+          "@aws-sdk/s3-request-presigner": "^3.490.0"
+    }
+}
